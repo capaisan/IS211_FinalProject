@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+{% for post in posts %}
+<div class="post">
+    <h2>{{ post[1] }}</h2>
+    <p>Published on {{ post[4] }} by {{ post[3] }}</p>
+    <p>{{ post[2] }}</p>
+</div>
+{% endfor %}
+{% endblock %}
