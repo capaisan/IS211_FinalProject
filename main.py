@@ -21,7 +21,6 @@ class LoginForm(FlaskForm):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        # Check if the username and password are correct
         if form.username.data == 'admin' and form.password.data == 'password':
             return redirect(url_for('dashboard'))
         else:
@@ -30,10 +29,8 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    # Check if the user is logged in
     if 'username' not in session:
         return redirect(url_for('login'))
-    # Display the dashboard
     return render_template('dashboard.html')
 
 
