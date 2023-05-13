@@ -22,16 +22,24 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         if form.username.data == 'admin' and form.password.data == 'password':
-            return redirect(url_for('dashboard'))
+            return render_template('/homepage.html')
         else:
             flash('Invalid username or password', 'error')
-    return render_template('login.html', form=form)
+    return render_template('/login.html', form=form)
 
-@app.route('/dashboard')
-def dashboard():
+@app.route('/')
+def homepage():
+    data = get_db()
+    cursor = data.cursor()
+    cursor.execute('SELECT id, title, content, author, published_date FROM posts ORDER BY published_date DESC')
+    posts = cursor.fetchall()
+
+    print(posts) #For debugging purposes, delete once solved.
+
     if 'username' not in session:
-        return redirect(url_for('login'))
-    return render_template('dashboard.html')
+        return redirect('login')
+
+    return render_template('/homepage.html', posts=posts)
 
 
 def get_db():
@@ -44,17 +52,26 @@ def get_db():
                     content TEXT NOT NULL,
                     author TEXT NOT NULL,
                     published_date DATE NOT NULL)''')
-        cursor = db.execute('SELECT id, title, content, author, published_date FROM posts ORDER BY published_date DESC')
-        posts = cursor.fetchall()
+        # cursor = db.execute('SELECT id, title, content, author, published_date FROM posts ORDER BY published_date DESC')
+        # posts = cursor.fetchall()
+        # return posts
+    return db
 
-    return posts
 
 
-@app.route('/')
-def homepage():
-    data = get_db()
-    return str(data)
+@app.route('/create_post', methods=['POST'])
+def create_post():
+    # Get the data from the request
+    title = request.form.get('title')
+    content = request.form.get('content')
+    author = request.form.get('author')
 
+    # Insert the data into the database
+    db = get_db()
+    db.execute('INSERT INTO posts (title, content, author, published_date) VALUES (?, ?, ?, datetime("now"))', (title, content, author))
+    db.commit()
+
+    return render_template('homepage.html')
 
 
 

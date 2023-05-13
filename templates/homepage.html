@@ -1,10 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
-{% for post in posts %}
-<div class="post">
-    <h2>{{ post[1] }}</h2>
-    <p>Published on {{ post[4] }} by {{ post[3] }}</p>
-    <p>{{ post[2] }}</p>
-</div>
-{% endfor %}
+<!--{% for post in posts%}-->
+<!--&lt;!&ndash;<div class="post">&ndash;&gt;-->
+<!--&lt;!&ndash;    <h2>Post 1: {{ post[1] }}</h2>&ndash;&gt;-->
+<!--&lt;!&ndash;    <p>Published on {{ post[4] }} by {{ post[3] }}</p>&ndash;&gt;-->
+<!--&lt;!&ndash;    <p>Post 2: {{ post[2] }}</p>&ndash;&gt;-->
+<!--&lt;!&ndash;</div>&ndash;&gt;-->
+<!--{% endfor %}-->
+
+    <form method="post" action="/create_post">
+        <label for="title">Title:</label>
+        <input type="text" name="title" id="title" required><br><br>
+
+        <label for="content">Content:</label>
+        <textarea name="content" id="content" rows="5" required></textarea><br><br>
+
+        <label for="author">Author:</label>
+        <input type="text" name="author" id="author" required><br><br>
+
+        <input type="submit" value="Create Post">
+    </form>
+
+    <form method="get" action="/get_db">
+<!--        So there is something wrong with this posts method below. There is a lot of stuff in the database
+but this wont work. So we need to figure out how to make posts retrieve the info in the database. -->
+    <h2>Posts</h2>
+    {% if posts %}
+        <ul>
+        {% for post in posts %}
+            <li>
+                <h3>{{ post[1] }}</h3>
+                <p>{{ post[2] }}</p>
+                <p>Author: {{ post[3] }}</p>
+                <p>Published Date: {{ post[4] }}</p>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No posts available.</p>
+
+    {% endif %}
+    </form>
 {% endblock %}

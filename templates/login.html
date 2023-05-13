@@ -15,5 +15,12 @@
     <div class="error">{{ message }}</div>
     {% endfor %}
 </form>
+
+{% if request.method == 'POST' %}
+    <h2>Submitted Values</h2>
+    <p>Username: {{ request.form.username }}</p>
+    <p>Password: {{ request.form.password }}</p>
+{% endif %}
+
 {% endblock %}
 
