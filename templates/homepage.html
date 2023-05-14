@@ -23,9 +23,9 @@
 
     <form method="get" action="/get_db">
 <!--        So there is something wrong with this posts method below. There is a lot of stuff in the database
-but this wont work. So we need to figure out how to make posts retrieve the info in the database. -->
+but this won't work. So we need to figure out how to make posts retrieve the info in the database. -->
     <h2>Posts</h2>
-    {% if posts %}
+
         <ul>
         {% for post in posts %}
             <li>
@@ -36,9 +36,6 @@ but this wont work. So we need to figure out how to make posts retrieve the info
             </li>
         {% endfor %}
         </ul>
-    {% else %}
-        <p>No posts available.</p>
 
-    {% endif %}
     </form>
 {% endblock %}

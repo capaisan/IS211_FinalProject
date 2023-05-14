@@ -8,6 +8,7 @@ from flask_wtf import FlaskForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'asdfjkl;'
+app.config['SESSION_TYPE'] = 'filesystem'
 
 
 
@@ -22,13 +23,17 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         if form.username.data == 'admin' and form.password.data == 'password':
-            return render_template('/homepage.html')
+            session['username'] = form.username.data  # Set the session after successful authentication
+            return redirect(url_for('homepage'))
         else:
             flash('Invalid username or password', 'error')
-    return render_template('/login.html', form=form)
+    return render_template('login.html', form=form)
 
 @app.route('/')
 def homepage():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
     data = get_db()
     cursor = data.cursor()
     cursor.execute('SELECT id, title, content, author, published_date FROM posts ORDER BY published_date DESC')
@@ -36,14 +41,11 @@ def homepage():
 
     print(posts) #For debugging purposes, delete once solved.
 
-    if 'username' not in session:
-        return redirect('login')
-
-    return render_template('/homepage.html', posts=posts)
+    return render_template('homepage.html', posts=posts)
 
 
 def get_db():
-    db = getattr(g, '_databse', None)
+    db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect('posts.db', check_same_thread=False)
         db.execute('''CREATE TABLE IF NOT EXISTS posts
@@ -52,15 +54,15 @@ def get_db():
                     content TEXT NOT NULL,
                     author TEXT NOT NULL,
                     published_date DATE NOT NULL)''')
-        # cursor = db.execute('SELECT id, title, content, author, published_date FROM posts ORDER BY published_date DESC')
-        # posts = cursor.fetchall()
-        # return posts
     return db
 
 
 
 @app.route('/create_post', methods=['POST'])
 def create_post():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
     # Get the data from the request
     title = request.form.get('title')
     content = request.form.get('content')
@@ -71,7 +73,7 @@ def create_post():
     db.execute('INSERT INTO posts (title, content, author, published_date) VALUES (?, ?, ?, datetime("now"))', (title, content, author))
     db.commit()
 
-    return render_template('homepage.html')
+    return redirect(url_for('homepage'))
 
 
 
