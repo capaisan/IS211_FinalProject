@@ -11,7 +11,6 @@ app.config['SECRET_KEY'] = 'asdfjkl;'
 app.config['SESSION_TYPE'] = 'filesystem'
 
 
-
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -39,7 +38,7 @@ def homepage():
     cursor.execute('SELECT id, title, content, author, published_date FROM posts ORDER BY published_date DESC')
     posts = cursor.fetchall()
 
-    print(posts) #For debugging purposes, delete once solved.
+    print(posts)
 
     return render_template('homepage.html', posts=posts)
 
@@ -63,16 +62,58 @@ def create_post():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    # Get the data from the request
     title = request.form.get('title')
     content = request.form.get('content')
     author = request.form.get('author')
 
-    # Insert the data into the database
     db = get_db()
     db.execute('INSERT INTO posts (title, content, author, published_date) VALUES (?, ?, ?, datetime("now"))', (title, content, author))
     db.commit()
 
+    return redirect(url_for('homepage'))
+
+
+@app.route('/edit_post/<int:post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute('SELECT * FROM posts WHERE id = ?', (post_id,))
+    post = cursor.fetchone()
+
+    if not post:
+        flash('Post not found', 'error')
+        return redirect(url_for('homepage'))
+
+    if request.method == 'POST':
+        updated_title = request.form.get('title')
+        updated_content = request.form.get('content')
+
+        cursor.execute('UPDATE posts SET title = ?, content = ? WHERE id = ?', (updated_title, updated_content, post_id))
+        db.commit()
+
+        flash('Post updated successfully', 'success')
+        return redirect(url_for('homepage'))
+
+    return render_template('edit_post.html', post=post)
+
+
+
+@app.route('/delete_post/<int:post_id>', methods=['POST'])
+def delete_post(post_id):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+    db.commit()
+
+    flash('Post deleted successfully', 'success')
     return redirect(url_for('homepage'))
 
 
